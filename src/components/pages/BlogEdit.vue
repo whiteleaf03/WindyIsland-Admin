@@ -1,6 +1,6 @@
 <template>
     <div id="blog-edit">
-        <div style="margin-bottom: 24px; display: flex; justify-content: space-between">
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center">
             <div>首页 / 博客撰写</div>
             <div><el-button type="danger" @click="submitArticle(undefined, undefined)">发布博客</el-button></div>
         </div>
