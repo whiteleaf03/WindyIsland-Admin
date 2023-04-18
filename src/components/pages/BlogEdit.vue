@@ -2,28 +2,47 @@
     <div id="blog-edit">
         <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center">
             <div>首页 / 博客撰写</div>
-            <div><el-button type="danger" @click="submitArticle(undefined, undefined)">发布博客</el-button></div>
+            <div><el-button type="danger" @click="openDialog(undefined, undefined)">发布博客</el-button></div>
         </div>
+        <el-dialog
+            v-model="dialog"
+            title="发布博文"
+            width="30%"
+        >
+            <div style="margin: 12px 8px">分类</div>
+            <el-select v-model="article.classificationId" class="m-2" placeholder="Select" size="large">
+                <el-option
+                    v-for="item in classificationList"
+                    :label="item.name"
+                    :value="item.id"
+                />
+            </el-select>
+            <div style="margin: 12px 8px">标签</div>
+            <el-checkbox-group v-model="article.tagIds">
+                <el-checkbox v-for="item in tagList" :label="item.id">{{ item.name }}</el-checkbox>
+            </el-checkbox-group>
+            <div style="margin: 12px 8px">边框颜色</div>
+            <el-color-picker v-model="article.borderColor"/>
+            <template #footer>
+                  <span class="dialog-footer">
+                    <el-button type="danger" @click="closeDialog()">关闭</el-button>
+                    <el-button type="primary" @click="submitArticle(undefined, undefined)">发布</el-button>
+                  </span>
+            </template>
+        </el-dialog>
         <div id="blog-info">
-            <div style="display: flex">
-                <div class="blog-info-item" style="margin-right: 24px;">
-                    <div class="blog-info-tips">文章标题</div>
-                    <el-input v-model="article.title" placeholder="*必填" clearable style="margin-bottom: 12px; margin-right: 12px"/>
-                </div>
-                <div class="blog-info-item">
-                    <div class="blog-info-tips">文章副标题</div>
-                    <el-input v-model="article.describe" placeholder="*必填" clearable style="margin-bottom: 12px"/>
-                </div>
+            <div class="blog-info-item">
+                <div class="blog-info-tips">文章标题</div>
+                <el-input v-model="article.title" placeholder="*必填" clearable
+                          style="margin-bottom: 12px; margin-right: 12px"/>
             </div>
-            <div style="display: flex">
-                <div class="blog-info-item" style="margin-right: 24px;">
-                    <div class="blog-info-tips">边框颜色</div>
-                    <el-input v-model="article.borderColor" placeholder="*必填" clearable style="margin-bottom: 12px; margin-right: 12px"/>
-                </div>
-                <div class="blog-info-item">
-                    <div class="blog-info-tips">封面图片路径</div>
-                    <el-input v-model="article.cover" placeholder="*必填" clearable style="margin-bottom: 12px"/>
-                </div>
+            <div class="blog-info-item">
+                <div class="blog-info-tips">文章副标题</div>
+                <el-input v-model="article.describe" placeholder="*必填" clearable style="margin-bottom: 12px"/>
+            </div>
+            <div class="blog-info-item">
+                <div class="blog-info-tips">封面图片路径</div>
+                <el-input v-model="article.cover" placeholder="*必填" clearable style="margin-bottom: 12px"/>
             </div>
         </div>
         <div id="blog-editor">
@@ -63,8 +82,41 @@ export default {
             borderColor: '',
             cover: '',
             content: '',
+            classificationId: '',
+            tagIds: [],
             author: 'WhiteLeaf03'
         })
+
+        const dialog = ref(false)
+        async function openDialog() {
+            let result
+            await axios({
+                url: '/api/tag/list',
+                method: "GET"
+            }).then((res) => {
+                result = res.data
+            })
+            if (result.msg === 'OK') {
+                this.tagList = result.data
+            }
+            await axios({
+                url: '/api/classification/list',
+                method: "GET"
+            }).then((res) => {
+                result = res.data
+            })
+            if (result.msg === 'OK') {
+                this.classificationList = result.data
+            }
+            this.dialog = true
+        }
+
+        const tagList = ref([])
+        const classificationList = ref([])
+
+        function closeDialog() {
+            this.dialog.value = false
+        }
 
         async function submitArticle() {
             let result
@@ -102,6 +154,11 @@ export default {
 
         return {
             article,
+            dialog,
+            openDialog,
+            closeDialog,
+            tagList,
+            classificationList,
             submitArticle,
             editorRef,
             mode: 'default',
@@ -126,7 +183,7 @@ export default {
 }
 
 .blog-info-item {
-    width: 50%;
+    /*width: 50%;*/
 }
 
 .blog-info-tips {
