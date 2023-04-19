@@ -141,7 +141,15 @@ export default {
         const editorRef = shallowRef()
         // 内容 HTML
         const toolbarConfig = {}
-        const editorConfig = { placeholder: '请输入内容...' }
+        const editorConfig = {
+            placeholder: '请输入内容...' ,
+            MENU_CONF: {
+                'uploadImage': {
+                    // 小于该值就插入 base64 格式（而不上传），默认为 0
+                    base64LimitSize: 10 * 1024 * 1024 // 10MB
+                }
+            }
+        }
         // 组件销毁时，也及时销毁编辑器
         onBeforeUnmount(() => {
             const editor = editorRef.value
