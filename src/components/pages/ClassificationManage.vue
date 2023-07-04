@@ -1,58 +1,67 @@
 <template>
-    <div style="display: flex; justify-content: center; margin: 24px">
-        <el-button type="primary" style="margin: 0 auto" @click="openDialog()">新增分类</el-button>
-    </div>
-    <el-dialog
+    <div id="classification-manage">
+        <div style="display: flex; justify-content: center; margin: 24px">
+            <el-button type="primary" style="margin: 0 auto" @click="openDialog()">新增分类</el-button>
+        </div>
+        <el-dialog
             v-model="dialog"
             title="新增分类"
             width="30%"
-    >
-        <el-input v-model="name" placeholder="分类名"/>
-        <template #footer>
+        >
+            <el-input v-model="name" placeholder="分类名"/>
+            <div style="width: 100%; height: 32px"></div>
+            <el-input v-model="cover" placeholder="封面图"/>
+            <template #footer>
                   <span class="dialog-footer">
                     <el-button type="primary" @click="uploadClassification()">确定</el-button>
                   </span>
-        </template>
-    </el-dialog>
-    <div style="display: flex;">
-        <div class="classification-manage-list" v-for="(item, index) in this.waterfall">
-            <div class="classification-manage-list-item" v-for="item in this.waterfall[index]">
-                <div style="margin-bottom: 12px; display: flex; position: relative">
-                    <div style="margin-right: 12px;">分类名称</div>
-                    <div style="color: dodgerblue">{{ item.name }}</div>
-                    <div style="position: absolute; right: 0">
-                        <el-icon color="#FF0000">
-                            <Delete @click="deleteClassification(item.id)"/>
-                        </el-icon>
-                    </div>
-                </div>
-                <div style="display: flex">
-                    <div style="margin-right: 12px;">博客数量</div>
-                    <div style="color: #15b715">{{ item.total }}</div>
-                </div>
-            </div>
+            </template>
+        </el-dialog>
+        <div id="classification-list">
+            <el-table :data="classificationList" border style="width: 100%">
+                <el-table-column type="index" label="序号" width="50" />
+                <el-table-column prop="cover" label="封面图" width="120" >
+                    <template #default="scope">
+                        <div style="width: 100%; height: 100%; display: flex">
+                            <el-image :src="scope.row.cover" fit="contain" />
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="name" label="分类名" />
+                <el-table-column prop="total" label="总数" />
+                <el-table-column prop="total" label="编辑" >
+                    <template #default="scope">
+                        <el-button :icon="EditPen" type="primary" >编辑</el-button>
+                        <el-button :icon="Delete" type="danger">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
         </div>
     </div>
 </template>
 
 <script>
-import {Delete} from "@element-plus/icons-vue";
+import {Delete, EditPen} from "@element-plus/icons-vue";
 import axios from "axios";
 
 export default {
     name: "ClassificationManage",
+    computed: {
+        Delete() {
+            return Delete
+        },
+        EditPen() {
+            return EditPen
+        }
+    },
     components: {Delete},
     data() {
         return {
             height: '',
-            waterfall: [
-                [],
-                [],
-                [],
-                []
-            ],
+            classificationList: [],
             dialog: false,
-            name: ''
+            name: '',
+            cover: ''
         }
     },
     methods: {
@@ -68,12 +77,7 @@ export default {
                 result = res.data
             })
             if (result.msg === 'OK') {
-                let classificationList = result.data
-                let waterfall = [[], [], [], []]
-                for (let index in classificationList) {
-                    waterfall[index % 4].push(classificationList[index])
-                }
-                this.waterfall = waterfall
+                this.classificationList = result.data
             }
         },
         openDialog() {
@@ -91,7 +95,8 @@ export default {
                     'Content-Type': 'application/json'
                 },
                 data: JSON.stringify({
-                    name: this.name
+                    name: this.name,
+                    cover: this.cover
                 })
             }).then((res) => {
                 result = res.data
@@ -99,6 +104,7 @@ export default {
             if (result.msg === 'OK') {
                 this.closeDialog()
                 this.name = ''
+                this.cover = ''
                 await this.getClassificationInfo()
             } else {
                 alert('添加失败')
@@ -134,26 +140,11 @@ export default {
 
 <style scoped>
 #classification-manage {
-    display: flex;
-    flex-direction: column;
-    margin: 24px;
     background-color: white;
+    margin: 24px;
 }
 
-.classification-manage-list {
-    width: 25%;
-    display: flex;
-    flex-direction: column;
-}
-
-.classification-manage-list-item {
-    border: 1px solid gray;
-    border-radius: 5px;
-    padding: 12px;
+#classification-list {
     margin: 24px;
-    font-family: Tanugo糖果手写体, fangsong;
-    font-size: larger;
-    font-weight: bolder;
-    background-color: white;
 }
 </style>
